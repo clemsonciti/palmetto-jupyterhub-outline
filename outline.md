@@ -68,26 +68,94 @@ such as the default kernels and extensions
 
 ### Overview of the cluster
 
+The Palmetto cluster is the university's primary
+high-performance computing resource,
+consisting of over 2000 compute nodes, and
+providing 100 GB of backed-up storage for each user.
+
 <img src="img/palmetto-structure.png" style="width:200px">
 
-The Palmetto cluster
-
+The above image describes the basic
+structure of the Palmetto cluster,
+and the mechanism for scheduling jobs on the compute nodes of the cluster:
+Traditionally, users log in to the `user001` node via SSH,
+and use the `qsub` command to schedule jobs on the compute nodes
+via the PBS Pro Scheduler.
 
 ### Networking
 
-Both the proxy and hub are run as services on
-a special node of the cluster,
-which is configured to submit and delete jobs
-using the commands `qsub` and `qdel`.
+Both the proxy and hub are run as system services on
+a special `webapp` node of the cluster - a special service node
+for hosting web applications and cluster documentation.
+Initially, the hub was run on the `user001` node,
+while the proxy was run on the `webapp` node.
+Later, the `webapp` node was configured with the `qsub`, `qstat` and `qdel` commands
+for submitting, deleting and querying batch jobs,
+enabling the hub also to be moved there.
+
+The proxy running the `webapp` node
+can be reached at `https://palmetto.clemson.edu/jupyterhub`.
 
 ### Authentication
 
-We use the default PAM authenticator.
+Authentication by the Hub is done using the default PAM authenticator.
 
 ### Spawner
 
-We use 
+Because the Palmetto is a batch scheduled system,
+the [`batchspawner`](https://github.com/jupyterhub/batchspawner)
+Spawner is the most appropriate to use in our JupyterHub setup.
+
+In traditional use of the cluster,
+users log in to the cluster
+and schedule computations on the cluster via "batch scipts".
+The batch script specifies the resources required for the computations,
+and the commands to be executed using these resources:
+
+~~~
+#!/bin/bash
+
+#PBS -N hello
+#PBS -l select=1:ncpus=8:mem=1gb:interconnect=1g
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+module add gcc/4.8.1
+export OMP_NUM_THREADS=1
+
+./hello.x
+~~~
+
+The above script (`hello.pbs`) can be submitted to the "scheduler" using the `qsub command`:
+
+~~~
+$ qsub hello.pbs
+~~~
+
+Batchspawner simply works by submitting a batch script
+on behalf of authenticated users.
+As part of this batch script,
+the `jupyterhub-singleuser` executable is run - which runs the
+Single User Notebook Server for the user.
+The scheduler views this batch script as any other user-submitted script.
+
+We use a version of `batchspawner`
+customized for our site-specific scheduler options,
+and also customized to use a form for users to enter the required computing resources.
+It is trivial to create such customized spawners
+simply by subclassing the provided spawner classes such as `TorqueSpawner` or `SlurmSpawner`.
 
 ### Notebook environment
+
+By default, we provide the following kernels:
+
+* Python 2 and 3 (Anaconda v4.2.0)
+* MATLAB (via [pymatbridge](https://anneurai.net/2015/11/12/matlab-based-ipython-notebooks/)
+* R (via [IRKernel](https://irkernel.github.io/)).
+
+Each kernel runs in a separate [conda](http://conda.pydata.org/) environment,
+allowing us to easily configure the kernel's environments independent of each other.
+In addition, we encourage users to install their own
+kernels (e.g., for other languages) in their home directories.
 
 ### Overview
