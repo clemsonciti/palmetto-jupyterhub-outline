@@ -28,7 +28,7 @@ it easier to support users and diagnose problems
 ## How does it work?
 
 JupyterHub is a set of processes that together provide a
-single user Jupyter Notebook server for each person in a group:
+Single User Notebook Server for each person in a group:
 
 1. *Proxy*: the public facing program that routes the HTTP request made by
 the user's browser to the Hub or the Single User Notebook Sever
@@ -42,6 +42,52 @@ from their perspective:
 
 1. The user accesses JupyterHub by typing in an IP address or domain name in their web browser
 2. Typically, they are asked to provide a username and password - 
-typically their credentials on whatever computing resource is being used.
-3. Once authenticated, the user is presented with a runnning notebook server.
+typically their credentials on whatever computing resource is being used
+3. Once authenticated, the user is presented with the Jupyter Notebook dashboard
 
+## JupyterHub configuration
+
+JupyterHub can run out-of-the-box in most situations,
+but needs to be configured to fit the needs of each site that deploys JupyterHub.
+Following are some configuration options:
+
+1. **Networking**: things like the IP addresses and ports for the Proxy and Hub
+1. **Security**: including SSL encryption to enable HTTPS, and tokens
+for encrypting browser cookies and securing communication between the Proxy and the Hub.
+1. **Authentication**: the method used by the Hub for authenticating users.
+By default, JupyterHub uses PAM Authentication - any user with a password
+on the system will be able to authenticate with this password.
+1. **Spawner**: the method used by the Hub to start Single User Notebook Servers
+for authenticated users. For example,
+*DockerSpawner* to start a Notebook Servers in separate Docker containers,
+or *BatchSpawner* to start a Notebook Servers in batch scheduled systems
+1. **Notebook environment**: the Jupyter Notebook features available to users,
+such as the default kernels and extensions
+
+## JupyterHub deployment on the Palmetto Cluster
+
+### Overview of the cluster
+
+<img src="img/palmetto-structure.png" style="width:200px">
+
+The Palmetto cluster
+
+
+### Networking
+
+Both the proxy and hub are run as services on
+a special node of the cluster,
+which is configured to submit and delete jobs
+using the commands `qsub` and `qdel`.
+
+### Authentication
+
+We use the default PAM authenticator.
+
+### Spawner
+
+We use 
+
+### Notebook environment
+
+### Overview
