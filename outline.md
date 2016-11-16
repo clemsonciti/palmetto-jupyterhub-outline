@@ -159,3 +159,5 @@ In addition, we encourage users to install their own
 kernels (e.g., for other languages) in their home directories.
 
 ### Overview
+
+<img src="img/palmetto-subsystems.png" style="width:400px">
